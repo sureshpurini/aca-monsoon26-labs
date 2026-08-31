@@ -16,7 +16,7 @@ New labs are added during the semester — `git pull` before starting each one.
 | Lab | What you do | Status |
 |---|---|---|
 | [**lab0**](lab0/) — Get the toolchain working | Install `bsc` and Verilator; run three smoke tests, ending with the Fife CPU booting on your machine | Ready |
-| lab1 | — | Later |
+| [**lab1**](lab1/) — A matrix multiply unit | Build a matmul accelerator in BSV, measure it three different ways, and argue for one design against a stated priority | Ready |
 | Mini-project — a matmul accelerator as a RISC-V extension | Extend **Fife**, the pipelined RV32I CPU, with a custom matrix-multiply instruction | Later |
 
 Start with **[lab0](lab0/)**. It has no prerequisites and it is what every later
