@@ -1,4 +1,4 @@
-# Makefile --- Lab 1: build, run and measure your matrix multiply unit.
+# Makefile --- Mini-project: build, run and measure your matrix multiply unit.
 #
 # Self-contained: it needs `bsc` on your PATH and nothing else.  `make depth`
 # additionally needs yowasp-yosys (see below); the rest works without it.
@@ -13,8 +13,8 @@
 #
 # The version is pinned so that everyone's numbers are comparable.
 
-TOP      = mkTbLab1
-MAIN     = TbLab1.bsv
+TOP      = mkTbMatMul
+MAIN     = TbMatMul.bsv
 DUT      = mkMatMul
 DUTSRC   = MatMul.bsv
 BUILDDIR = build_bsim
@@ -47,17 +47,17 @@ run: link
 check: link
 	@./$(EXE) | tee $(BUILDDIR)/run.log
 	@echo
-	@if grep -q '^LAB1 OK' $(BUILDDIR)/run.log; then \
-	    echo "lab1: PASS"; \
+	@if grep -q '^MINIPROJ OK' $(BUILDDIR)/run.log; then \
+	    echo "mini-project: PASS"; \
 	else \
-	    echo "lab1: FAIL -- see the output above"; exit 1; \
+	    echo "mini-project: FAIL -- see the output above"; exit 1; \
 	fi
 
-# Cells and logic depth: what Bluesim cannot tell you.  See README §6.
+# Cells and logic depth: what Bluesim cannot tell you.  See spec §8.
 depth:
 	@./area-delay.sh $(DUT) $(DUTSRC) .
 
-# Why two rules you expected to fire together never do.  See README §8.
+# Why two rules you expected to fire together never do.  See spec §10.
 schedule: | $(BUILDDIR)
 	$(BSC) $(BSCFLAGS) -show-schedule -u -g $(DUT) $(DUTSRC)
 	@echo

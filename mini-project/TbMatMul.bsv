@@ -1,26 +1,26 @@
-// TbLab1.bsv --- the Lab 1 testbench.  DO NOT EDIT for submission.
+// TbMatMul.bsv --- the mini-project testbench.  DO NOT EDIT for submission.
 //
 // This is the same testbench we grade with.  It drives your `mkMatMul` through
 // both workloads, checks every value it returns against an independent
 // behavioural model, and reports cycles.
 //
-//   W1  "deep"      1 epoch  x 64 Muls,  16 reads       592 requests
-//   W2  "shallow"  32 epochs x  2 Muls, 512 reads      1088 requests
+//   W1  64 x  64 x 64   256 epochs x  16 Muls    40,960 requests
+//   W2  64 x 512 x 64   256 epochs x 128 Muls   299,008 requests
 //
-// Both do exactly the same arithmetic -- 64 tiles, 4096 multiply-accumulates.
-// They differ only in how often C is read out.  See §5 of the README.
+// Both compute 256 output tiles.  They differ only in how deep the
+// accumulation runs before C is read out.  See §7 of the spec.
 //
 // One request is issued per cycle whenever your unit will accept one, so the
 // cycle counts are your unit's behaviour and not the testbench's.  `stalls` is
 // cycles minus requests: the number of cycles your unit spent not accepting
 // work.  For a design that answers everything in one cycle it is 1 (the last
-// response lands the cycle after the last request).  If it is large, §8 of the
-// README is where to start.
+// response lands the cycle after the last request).  If it is large, §10 of the
+// spec is where to start.
 //
 // You are welcome to READ this file -- it is the precise statement of what
 // "correct" means, and it is more specific than prose can be.
 
-package TbLab1;
+package TbMatMul;
 
 import Vector   :: *;
 import FIFOF    :: *;
@@ -179,7 +179,7 @@ module mkRun #(Integer epochs, Integer tiles_per_epoch) (Run_IFC);
 	 P_READ:  begin
 		     dut.req (tagged ReadC MM_Rd {row: rg_rrow, chunk: rg_rchk});
 
-		     // Expected value, and the destructive zeroing the README
+		     // Expected value, and the destructive zeroing the spec
 		     // requires the unit to perform.
 		     let c = rg_ref;
 		     f_expect.enq (pack (c [rg_rrow][rg_rchk]));
@@ -240,11 +240,12 @@ endmodule
 // ================================================================
 
 (* synthesize *)
-module mkTbLab1 (Empty);
+module mkTbMatMul (Empty);
 
-   // W1: one deep epoch.  W2: many shallow ones.  Same arithmetic.
-   Run_IFC w1 <- mkRun (1,  64);
-   Run_IFC w2 <- mkRun (32,  2);
+   // The two workloads of spec §7.  Both are 256 output tiles; they differ
+   // only in how deep the accumulation runs before readout.
+   Run_IFC w1 <- mkRun (256,  16);
+   Run_IFC w2 <- mkRun (256, 128);
 
    Reg #(Bool) rg_done <- mkReg (False);
 
@@ -258,22 +259,22 @@ module mkTbLab1 (Empty);
    rule rl_report (! rg_done && w1.done && w2.done);
       rg_done <= True;
       $display ("================================================================");
-      $display ("Lab 1 --- %0dx%0dx%0d, Int%0d operands, Int%0d accumulator",
+      $display ("Mini-project --- %0dx%0dx%0d, Int%0d operands, Int%0d accumulator",
 		m_dim, k_dim, n_dim, w_elem, w_acc);
       $display ("================================================================");
       $display ("");
       $display ("  workload    requests   cycles   stalls   errors");
       $display ("  ----------  --------  -------  -------  -------");
-      row ("W1 deep   ", w1);
-      row ("W2 shallow", w2);
+      row ("W1        ", w1);
+      row ("W2        ", w2);
       $display ("");
 
       if ((w1.errs | w2.errs) == 0)
-	 $display ("LAB1 OK  (correct on both workloads)");
+	 $display ("MINIPROJ OK  (correct on both workloads)");
       else
-	 $display ("LAB1 FAILED  (%0d + %0d mismatches)", w1.errs, w2.errs);
+	 $display ("MINIPROJ FAILED  (%0d + %0d mismatches)", w1.errs, w2.errs);
       $finish (0);
    endrule
 endmodule
 
-endpackage: TbLab1
+endpackage: TbMatMul
